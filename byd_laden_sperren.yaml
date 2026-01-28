@@ -1,0 +1,61 @@
+alias: BYD – Zeitgesteuertes Laden und Entladen sperren
+description: ""
+triggers:
+  - minutes: /5
+    trigger: time_pattern
+conditions:
+  - condition: time
+    after: "00:05:00"
+    before: "06:00:00"
+  - condition: state
+    entity_id: binary_sensor.batterie_arbitrage_lohnt_sich
+    state:
+      - "on"
+    enabled: true
+  - condition: time
+    after: sensor.cheapest_4h_energy
+    enabled: true
+actions:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ states('sensor.byd_battery_box_premium_hv_state_of_charge_4') |
+              float
+                 < states('input_number.battery_target_charge') | float }}
+        sequence:
+          - target:
+              entity_id: select.byd_battery_box_premium_hv_storage_control_mode_3
+            data:
+              option: Charge from Grid
+            action: select.select_option
+          - target:
+              entity_id: number.byd_battery_box_premium_hv_grid_charge_power_3
+            data:
+              value: 6000
+            action: number.set_value
+      - conditions:
+          - condition: template
+            value_template: >
+              {{ states('sensor.byd_battery_box_premium_hv_state_of_charge_4') |
+              float
+                 >= states('input_number.battery_target_charge') | float }}
+        sequence:
+          - target:
+              entity_id: select.byd_battery_box_premium_hv_storage_control_mode_3
+            data:
+              option: PV Charge and Discharge Limit
+            action: select.select_option
+          - target:
+              entity_id: number.byd_battery_box_premium_hv_discharge_limit_3
+            data:
+              value: "0"
+            action: number.set_value
+          - target:
+              entity_id: number.byd_battery_box_premium_hv_pv_charge_limit_3
+            data:
+              value: 10000
+            action: number.set_value
+mode: single
+trace:
+  stored_traces: 300

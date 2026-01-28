@@ -1,0 +1,29 @@
+alias: BYD – Entladen bis leer
+description: ""
+triggers:
+  - trigger: time_pattern
+    minutes: /5
+conditions:
+  - condition: time
+    after: "06:30:00"
+    before: "23:00:00"
+  - condition: state
+    entity_id: binary_sensor.batterie_arbitrage_lohnt_sich
+    state: "on"
+  - condition: time
+    after: sensor.most_expensive_4h_energy
+    enabled: true
+actions:
+  - target:
+      entity_id: select.byd_battery_box_premium_hv_storage_control_mode_3
+    data:
+      option: Auto
+    action: select.select_option
+  - target:
+      entity_id: number.byd_battery_box_premium_hv_discharge_limit_3
+    data:
+      value: 10000
+    action: number.set_value
+mode: single
+trace:
+  stored_traces: 300
