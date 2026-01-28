@@ -1,0 +1,254 @@
+template:
+   - trigger:
+      - platform: time
+        at: "14:01:00"
+      - platform: state
+        entity_id: sensor.nordpool_kwh_ger_eur_3_10_019
+        attribute: tomorrow_valid
+      - platform: homeassistant
+        event: start    
+     sensor:
+      - name: "Cheapest 3h Energy"
+        unique_id: cheapest_3h_energy
+        device_class: timestamp
+        state: >
+          {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+          {% set slots = 12 %}
+          {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+          {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+          {% set all_prices = raw_today + raw_tomorrow %}
+          {% set filtered = all_prices | selectattr('start', 'ge', today_at('08:00')) | selectattr('start', 'lt', today_at('16:00')) | list %}
+          {% if filtered | length >= slots %}
+            {% set ns = namespace(best_idx=0, best_sum=9999) %}
+            {% for i in range(filtered | length - slots + 1) %}
+              {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+              {% if window_sum < ns.best_sum %}
+                {% set ns.best_sum = window_sum %}
+                {% set ns.best_idx = i %}
+              {% endif %}
+            {% endfor %}
+            {{ filtered[ns.best_idx].start }}
+          {% else %}
+            unavailable
+          {% endif %}
+        attributes:
+          end_time: >
+            {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+            {% set slots = 12 %}
+            {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+            {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+            {% set all_prices = raw_today + raw_tomorrow %}
+            {% set filtered = all_prices | selectattr('start', 'ge', today_at('08:00')) | selectattr('start', 'lt', today_at('16:00')) | list %}
+            {% if filtered | length >= slots %}
+              {% set ns = namespace(best_idx=0, best_sum=9999) %}
+              {% for i in range(filtered | length - slots + 1) %}
+                {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+                {% if window_sum < ns.best_sum %}
+                  {% set ns.best_sum = window_sum %}
+                  {% set ns.best_idx = i %}
+                {% endif %}
+              {% endfor %}
+              {{ filtered[ns.best_idx + slots - 1].end }}
+            {% endif %}
+          average_price: >
+            {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+            {% set slots = 12 %}
+            {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+            {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+            {% set all_prices = raw_today + raw_tomorrow %}
+            {% set filtered = all_prices | selectattr('start', 'ge', today_at('08:00')) | selectattr('start', 'lt', today_at('16:00')) | list %}
+            {% if filtered | length >= slots %}
+              {% set ns = namespace(best_idx=0, best_sum=9999) %}
+              {% for i in range(filtered | length - slots + 1) %}
+                {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+                {% if window_sum < ns.best_sum %}
+                  {% set ns.best_sum = window_sum %}
+                  {% set ns.best_idx = i %}
+                {% endif %}
+              {% endfor %}
+              {{ (ns.best_sum / slots) | round(4) }}
+            {% endif %}
+      - name: "Cheapest 4h Energy"
+        unique_id: cheapest_4h_energy
+        device_class: timestamp
+        state: >
+          {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+          {% set slots = 16 %}
+          {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+          {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+          {% set all_prices = raw_today + raw_tomorrow %}
+          {% set filtered = (all_prices | selectattr('start', 'ge', today_at('22:00')) | list + all_prices | selectattr('start', 'lt', today_at('08:00') + timedelta(days=1)) | selectattr('start', 'ge', today_at('00:00') + timedelta(days=1)) | list) if raw_tomorrow | length > 0 else raw_today %}
+          {% if filtered | length >= slots %}
+            {% set ns = namespace(best_idx=0, best_sum=9999) %}
+            {% for i in range(filtered | length - slots + 1) %}
+              {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+              {% if window_sum < ns.best_sum %}
+                {% set ns.best_sum = window_sum %}
+                {% set ns.best_idx = i %}
+              {% endif %}
+            {% endfor %}
+            {{ filtered[ns.best_idx].start }}
+          {% else %}
+            unavailable
+          {% endif %}
+        attributes:
+          end_time: >
+            {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+            {% set slots = 16 %}
+            {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+            {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+            {% set all_prices = raw_today + raw_tomorrow %}
+            {% set filtered = (all_prices | selectattr('start', 'ge', today_at('22:00')) | list + all_prices | selectattr('start', 'lt', today_at('08:00') + timedelta(days=1)) | selectattr('start', 'ge', today_at('00:00') + timedelta(days=1)) | list) if raw_tomorrow | length > 0 else raw_today %}
+            {% if filtered | length >= slots %}
+              {% set ns = namespace(best_idx=0, best_sum=9999) %}
+              {% for i in range(filtered | length - slots + 1) %}
+                {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+                {% if window_sum < ns.best_sum %}
+                  {% set ns.best_sum = window_sum %}
+                  {% set ns.best_idx = i %}
+                {% endif %}
+              {% endfor %}
+              {{ filtered[ns.best_idx + slots - 1].end }}
+            {% endif %}
+          average_price: >
+            {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+            {% set slots = 16 %}
+            {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+            {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+            {% set all_prices = raw_today + raw_tomorrow %}
+            {% set filtered = (all_prices | selectattr('start', 'ge', today_at('22:00')) | list + all_prices | selectattr('start', 'lt', today_at('08:00') + timedelta(days=1)) | selectattr('start', 'ge', today_at('00:00') + timedelta(days=1)) | list) if raw_tomorrow | length > 0 else raw_today %}
+            {% if filtered | length >= slots %}
+              {% set ns = namespace(best_idx=0, best_sum=9999) %}
+              {% for i in range(filtered | length - slots + 1) %}
+                {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+                {% if window_sum < ns.best_sum %}
+                  {% set ns.best_sum = window_sum %}
+                  {% set ns.best_idx = i %}
+                {% endif %}
+              {% endfor %}
+              {{ (ns.best_sum / slots) | round(4) }}
+            {% endif %}
+
+      - name: "Most Expensive 4h Energy"
+        unique_id: most_expensive_4h_energy
+        device_class: timestamp
+        state: >
+          {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+          {% set slots = 16 %}
+          {% set start_hour = 8 %}
+          {% set end_hour = 22 %}
+          {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+          {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+          {% set all_prices = raw_today + raw_tomorrow %}
+          {% set filtered = all_prices | selectattr('start', 'ge', today_at(start_hour ~ ':00')) | selectattr('start', 'lt', today_at(end_hour ~ ':00')) | list %}
+          {% if filtered | length >= slots %}
+            {% set ns = namespace(best_idx=0, best_sum=0) %}
+            {% for i in range(filtered | length - slots + 1) %}
+              {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+              {% if window_sum > ns.best_sum %}
+                {% set ns.best_sum = window_sum %}
+                {% set ns.best_idx = i %}
+              {% endif %}
+            {% endfor %}
+            {{ filtered[ns.best_idx].start }}
+          {% else %}
+            unavailable
+          {% endif %}
+        attributes:
+          end_time: >
+            {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+            {% set slots = 16 %}
+            {% set start_hour = 8 %}
+            {% set end_hour = 22 %}
+            {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+            {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+            {% set all_prices = raw_today + raw_tomorrow %}
+            {% set filtered = all_prices | selectattr('start', 'ge', today_at(start_hour ~ ':00')) | selectattr('start', 'lt', today_at(end_hour ~ ':00')) | list %}
+            {% if filtered | length >= slots %}
+              {% set ns = namespace(best_idx=0, best_sum=0) %}
+              {% for i in range(filtered | length - slots + 1) %}
+                {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+                {% if window_sum > ns.best_sum %}
+                  {% set ns.best_sum = window_sum %}
+                  {% set ns.best_idx = i %}
+                {% endif %}
+              {% endfor %}
+              {{ filtered[ns.best_idx + slots - 1].end }}
+            {% endif %}
+          average_price: >
+            {% set sensor = 'sensor.nordpool_kwh_ger_eur_3_10_019' %}
+            {% set slots = 16 %}
+            {% set start_hour = 8 %}
+            {% set end_hour = 22 %}
+            {% set raw_today = state_attr(sensor, 'raw_today') | default([], true) %}
+            {% set raw_tomorrow = state_attr(sensor, 'raw_tomorrow') | default([], true) %}
+            {% set all_prices = raw_today + raw_tomorrow %}
+            {% set filtered = all_prices | selectattr('start', 'ge', today_at(start_hour ~ ':00')) | selectattr('start', 'lt', today_at(end_hour ~ ':00')) | list %}
+            {% if filtered | length >= slots %}
+              {% set ns = namespace(best_idx=0, best_sum=0) %}
+              {% for i in range(filtered | length - slots + 1) %}
+                {% set window_sum = filtered[i:i+slots] | map(attribute='value') | list | sum %}
+                {% if window_sum > ns.best_sum %}
+                  {% set ns.best_sum = window_sum %}
+                  {% set ns.best_idx = i %}
+                {% endif %}
+              {% endfor %}
+              {{ (ns.best_sum / slots) | round(4) }}
+            {% endif %}    
+            
+   - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id: sensor.most_expensive_4h_energy
+     binary_sensor:
+      - name: "Teuerste 4h aktiv"
+        unique_id: most_expensive_4h_active
+        state: >
+          {% set start = states('sensor.most_expensive_4h_energy') | as_datetime %}
+          {% set end = state_attr('sensor.most_expensive_4h_energy', 'end_time') | as_datetime %}
+          {{ start and end and start <= now() < end }}
+
+   - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id: sensor.cheapest_4h_energy
+     binary_sensor:
+      - name: "Günstigste 4h aktiv"
+        unique_id: cheapest_4h_active
+        state: >
+          {% set start = states('sensor.cheapest_4h_energy') | as_datetime %}
+          {% set end = state_attr('sensor.cheapest_4h_energy', 'end_time') | as_datetime %}
+          {{ start and end and start <= now() < end }}
+     sensor:
+      - name: "Strompreis Delta 4h"
+        unique_id: strompreis_delta_4h
+        unit_of_measurement: "€/kWh"
+        state: >
+          {% set teuer = state_attr('sensor.most_expensive_4h_energy', 'average_price') | float(0) %}
+          {% set guenstig = state_attr('sensor.cheapest_4h_energy', 'average_price') | float(0) %}
+          {{ (teuer - guenstig) | round(4) }}
+
+   - trigger:
+      - platform: time_pattern
+        minutes: "/5"
+      - platform: state
+        entity_id: sensor.most_expensive_4h_energy
+      - platform: state
+        entity_id: sensor.cheapest_4h_energy
+     binary_sensor:
+      - name: "Batterie Arbitrage lohnt sich"
+        unique_id: battery_arbitrage_worth_it
+        state: >
+          {% set teuer = state_attr('sensor.most_expensive_4h_energy', 'average_price') | float(0) %}
+          {% set guenstig = state_attr('sensor.cheapest_4h_energy', 'average_price') | float(0) %}
+          {% set delta = teuer - guenstig %}
+          {% set min_delta = 0.08 %}
+          {{ delta > min_delta }}
+        attributes:
+          delta: >
+            {% set teuer = state_attr('sensor.most_expensive_4h_energy', 'average_price') | float(0) %}
+            {% set guenstig = state_attr('sensor.cheapest_4h_energy', 'average_price') | float(0) %}
+            {{ (teuer - guenstig) | round(4) }} 
+            
